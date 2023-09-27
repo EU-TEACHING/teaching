@@ -1,0 +1,13 @@
+services:
+  
+  carla_mock:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: carla_mocò
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/carla_mock.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $APP_DIR/mock_data:/app/raw_data

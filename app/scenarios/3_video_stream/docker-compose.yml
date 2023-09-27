@@ -1,0 +1,51 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env
+
+  rtmpserver:
+    image: rtmp_server
+    container_name: rtmpserver    
+    hostname: rtmpserver
+    ports:
+      - 1935:1935
+
+  dash_cam_stream:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: dash_cam_stream
+    depends_on:       
+      - rabbitmq
+      - rtmpserver
+    restart: on-failure
+      - env/dash_cam_stream.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $MOCK_DATA_DIR:/app/data_storage
+
+  carla_mock:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    depends_on: 
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/carla_mock.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $MOCK_DATA_DIR:/app/raw_data
+
+  frame_metrics:
+    image: "chronis10/teaching-data:${ARCH:-amd64}"
+    container_name: frame_metrics
+    depends_on: 
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/frame_metrics.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - ./data_storage:/app/data_storage

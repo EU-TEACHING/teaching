@@ -1,0 +1,10 @@
+services:
+
+  fed_server:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: fed_server
+    env_file:
+      - env/fed_server.env
+      - env/comm/kafka_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage

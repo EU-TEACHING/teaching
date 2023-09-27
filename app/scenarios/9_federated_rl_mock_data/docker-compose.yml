@@ -1,0 +1,89 @@
+services:
+  
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    hostname: influxdb
+    ports:
+      - 8086:8086
+    env_file:
+      - env/comm/influxdb_server.env
+
+  carla_mock:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: carla_mock
+    depends_on: 
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/carla_mock.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $APP_DIR/mock_data:/app/raw_data
+  
+  fed_server:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: fed_server
+    environment:
+      - GROUPID=3
+    env_file:
+      - env/fed_server.env
+      - env/comm/kafka_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+
+  rl_predictor_1:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: rl_module_1
+    depends_on: 
+      - rabbitmq
+      - fed_server
+    restart: on-failure
+    environment:
+      - SERVICE_NAME=rl_module_1
+      - GROUPID=1
+    env_file:
+      - env/rl_predictor.env
+      - env/comm/kafka_client.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+  
+  rl_predictor_2:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: rl_module_2
+    depends_on: 
+      - rabbitmq
+      - fed_server
+    restart: on-failure
+    environment:
+      - SERVICE_NAME=rl_module_2
+      - GROUPID=2
+    env_file:
+      - env/rl_predictor.env
+      - env/comm/kafka_client.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+
+
+  influxdb_logger:
+    image: "chronis10/teaching-data:${ARCH:-amd64}"
+    container_name: influxdb_logger
+    depends_on:
+      - rabbitmq
+      - influxdb
+    restart: on-failure
+    env_file:
+      - env/influxdb_logger.env
+      - env/comm/rabbitmq_client.env
+      - env/comm/influxdb_client.env

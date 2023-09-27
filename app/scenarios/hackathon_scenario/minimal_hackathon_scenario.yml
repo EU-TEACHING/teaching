@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env
+
+  rpi_camera:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: rpi_camera
+    depends_on: 
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/rpi_camera.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - type: bind
+        source: ${APP_DIR}/data_storage
+        target: /app/storage
+        read_only: true
+        # consistency: cached
+
+  or_module:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: or_module
+    depends_on:
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/or_module.env
+      - env/comm/rabbitmq_client.env
+    # volumes:
+    #  - ${APP_DIR}/data_storage:/app/storage

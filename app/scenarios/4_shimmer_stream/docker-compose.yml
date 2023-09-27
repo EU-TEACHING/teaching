@@ -1,0 +1,52 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    hostname: influxdb
+    ports:
+      - 8086:8086
+    env_file:
+      - env/comm/influxdb_server.env
+
+  shimmer_sensors:
+    image: "vdecaro/teaching-sensors:latest"
+    container_name: shimmer_sensors
+    depends_on:
+      - rabbitmq
+      - influxdb
+    restart: on-failure
+    environment:
+      - SERVICE_TYPE=shimmer
+      - SERVICE_NAME=shimmer_sensors
+    env_file:
+      - .env
+    devices:
+      - /dev/rfcomm0:/dev/ttyS0
+    volumes:
+      - $PWD/config.yml:/storage/config.yaml
+      - $TEACHING_PATH:/code/teaching/teaching
+
+  influxdb_logger:
+    image: "vdecaro/teaching-data:latest"
+    depends_on:
+      - rabbitmq
+      - influxdb
+    restart: on-failure
+    environment:
+      - SERVICE_TYPE=influxdb
+      - SERVICE_NAME=influxdb_logger
+    env_file:
+      - .env
+    volumes:
+      - $PWD/config.yml:/storage/config.yaml
+      - $TEACHING_PATH:/code/teaching/teaching

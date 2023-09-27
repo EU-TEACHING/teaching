@@ -1,0 +1,32 @@
+services:
+
+  fed_server:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: fed_server
+    env_file:
+      - env/fed_server.env
+      - env/comm/fs_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+      - ../../../../teaching-ai-toolkit/federated:/app/federated
+
+  cloud:
+    image: model-transfer-service:v0.1
+    container_name: mts-cloud
+    restart: always
+    depends_on:
+      - fed_server
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+    environment:
+      - "mts.folders.monitored=/app/storage/federated/cloud/rl_module/outgoing"
+      - "mts.folders.downloads=/app/storage/federated/cloud/rl_module/incoming"
+      - "mts.file.sender.id=cloud"
+      - "mts.file.deleteUploads=false"
+      - "kafka.bootstrapAddress=node249-hpc.isti.cnr.it:9092"
+      - "kafka.groupId=cloud"
+      - "kafka.uploadsTopicName=teaching.federated_learning.aggregated_model"
+      - "kafka.downloadsTopicName=teaching.federated_learning.client_models"
+      - "crypto.algorithm=AES"
+      - "crypto.aes.passwords={mts1: 'McoO!lMcjneowufUF23', mts2: 'IcjcdMLA23!ICOm2', mts3: 'jjioOOCLM932!jOC', cloud: 'IfjcoaO!ICJDMa214'}"
+      - "crypto.aes.salts={mts1: 'dedc782d9130289c', mts2: '211C0A6AB767F21B', mts3: 'CB821D87B807A65A', cloud: '6068CCF5E6DFB752'}"

@@ -1,0 +1,13 @@
+services:
+
+  influxdb_logger:
+    image: "chronis10/teaching-data:${ARCH:-amd64}"
+    container_name: influxdb_logger
+    depends_on:
+      - rabbitmq
+      - influxdb
+    restart: on-failure
+    env_file:
+      - env/influxdb_logger.env
+      - env/comm/rabbitmq_client.env
+      - env/comm/influxdb_client.env

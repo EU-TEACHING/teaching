@@ -1,0 +1,10 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env

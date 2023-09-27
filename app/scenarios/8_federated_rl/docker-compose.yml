@@ -1,0 +1,53 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+    env_file:
+      - env/comm/rabbitmq_server.env
+
+  fed_server:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: fed_server
+    env_file:
+      - env/fed_server.env
+      - env/comm/kafka_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+
+  rl_predictor_1:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: rl_predictor_1
+    depends_on: 
+      - rabbitmq
+      - fed_server
+    restart: on-failure
+    environment:
+      - SERVICE_NAME=rl_predictor_1
+      - GROUPID=1
+    env_file:
+      - env/rl_predictor.env
+      - env/comm/rabbitmq_client.env
+      - env/comm/kafka_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage
+  
+  rl_predictor_2:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: rl_predictor_2
+    depends_on: 
+      - rabbitmq
+      - fed_server
+    restart: on-failure
+    environment:
+      - SERVICE_NAME=rl_predictor_2
+      - GROUPID=2
+    env_file:
+      - env/rl_predictor.env
+      - env/comm/rabbitmq_client.env
+      - env/comm/kafka_client.env
+    volumes:
+      - $APP_DIR/data_storage:/app/storage

@@ -1,0 +1,4 @@
+vidgear[core]===0.2.5
+numpy===1.22.3
+pyserial===3.5
+pillow===9.3.0

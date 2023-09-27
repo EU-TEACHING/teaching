@@ -1,0 +1,14 @@
+services:
+
+  shimmer_sensors:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: shimmer_sensors
+    depends_on:
+      - rabbitmq
+      - influxdb
+    restart: on-failure
+    env_file:
+      - env/shimmer_sensors.env
+      - env/comm/rabbitmq_client.env
+    devices:
+      - /dev/rfcomm0:/dev/ttyS0

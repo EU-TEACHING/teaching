@@ -1,0 +1,10 @@
+services:
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    hostname: influxdb
+    ports:
+      - 8086:8086
+    env_file:
+      - env/comm/influxdb_server.env

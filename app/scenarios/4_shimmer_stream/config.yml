@@ -1,0 +1,11 @@
+shimmer_sensors:
+  sampling_rate: 64
+  process: false
+
+influxdb_logger:
+  topics: ["sensor.*.value"]
+  host: influxdb
+  port: 8086
+  token: O3Ht-WCNm01PYE77g_etSCbJC1c_xzUS-m9viu9EUVb-S0kJ8YCUpmg0DRizER-tkLP3REQpFibAz-LoATBIng==
+  org: hua
+  bucket: teaching-bucket

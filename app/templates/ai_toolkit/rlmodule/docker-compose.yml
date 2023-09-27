@@ -1,0 +1,18 @@
+services:
+
+  rl_predictor:
+    image: "chronis10/teaching-ai-toolkit:${ARCH:-amd64}"
+    container_name: rl_predictor
+    depends_on: 
+      - rabbitmq
+      - fed_server # Remove if federated mode is disabled
+    restart: on-failure
+    environment:
+      - SERVICE_NAME=rl_predictor # If federated mode is activated, ensure that the SERVICE_NAME parameter is unique for each service (e.g., rl_predictor_1, rl_predictor_2, ...)
+      - GROUPID=1 # Not used if federated mode is disabled. IMPORTANT: ensure that each kafka client has a unique group id (server included)
+    env_file:
+      - env/rl_predictor.env
+      - env/comm/rabbitmq_client.env
+      - env/comm/kafka_client.env # Not used if federated mode is disabled
+    volumes:
+      - $APP_DIR/data_storage:/app/storage

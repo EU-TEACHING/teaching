@@ -1,0 +1,13 @@
+services:
+
+  eda_mock:
+    image: "chronis10/teaching-sensors:${ARCH:-amd64}"
+    container_name: file_multisensor
+    depends_on: 
+      - rabbitmq
+    restart: on-failure
+    env_file:
+      - env/eda_mock.env
+      - env/comm/rabbitmq_client.env
+    volumes:
+      - $APP_DIR/mock_data:/app/raw_data

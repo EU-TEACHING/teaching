@@ -1,0 +1,58 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+    - 5672:5672
+    env_file: .env
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    hostname: influxdb
+    ports:
+    - 8086:8086
+    env_file: .env
+  influxdb_logger:
+    image: vdecaro/teaching-data:latest
+    container_name: influxdb_logger
+    depends_on:
+    - rabbitmq
+    - influxdb
+    environment:
+      SERVICE_NAME: influxdb_logger
+      SERVICE_TYPE: teaching.data.modules.influxdb.InfluxDBManager
+    env_file: .env
+    volumes:
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/storage:/storage
+    - /Users/vdecaro/Desktop/TEACHING/teaching/teaching:/code/teaching/teaching
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/scenarios/5_stress_mock_data/config.yml:/app/config.yml
+  eda_mock:
+    image: vdecaro/teaching-sensors:latest
+    container_name: eda_mock
+    depends_on:
+    - influxdb_logger
+    - rabbitmq
+    environment:
+      SERVICE_NAME: eda_mock
+      SERVICE_TYPE: teaching.sensors.modules.file.csv_feed.CSVFeed
+    env_file: .env
+    volumes:
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/storage:/storage
+    - /Users/vdecaro/Desktop/TEACHING/teaching/teaching:/code/teaching/teaching
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/scenarios/5_stress_mock_data/config.yml:/app/config.yml
+  stress_service:
+    image: vdecaro/teaching-ai_toolkit:latest
+    container_name: stress_service
+    depends_on:
+    - eda_mock
+    - rabbitmq
+    - influxdb_logger
+    environment:
+      SERVICE_NAME: stress_service
+      SERVICE_TYPE: teaching.ai_toolkit.modules.stress_prediction.StressModule
+    env_file: .env
+    volumes:
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/storage:/storage
+    - /Users/vdecaro/Desktop/TEACHING/teaching/teaching:/code/teaching/teaching
+    - /Users/vdecaro/Desktop/TEACHING/teaching/app/scenarios/5_stress_mock_data/config.yml:/app/config.yml

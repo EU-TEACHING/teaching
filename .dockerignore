@@ -1,0 +1,11 @@
+.vscode
+app
+docker
+docs
+requirements
+.gitignore
+pre-commit-config.yaml
+.readthedocs.yaml
+CONTRIBUTING.md
+Makefile
+README.md

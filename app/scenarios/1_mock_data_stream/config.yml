@@ -1,0 +1,7 @@
+influxdb_logger:
+  topics:
+  - sensor.*.value
+carla_mock:
+  path: /storage/data/carla.csv
+  output_topic: sensor.carla.value
+  transmit_rate: 0.1

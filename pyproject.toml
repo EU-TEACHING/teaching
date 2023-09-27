@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "teaching"
+version = "0.1.0"
+description = "A computing Toolkit for building Efficient Autonomous appliCations leveraging Humanistic INtelliGence"
+authors = ["Valerio De Caro <valerio.decaro@phd.unipi.it>", "EU-TEACHING <davide.bacciu@unipi.it>"]
+repository = "https://github.com/EU-TEACHING/teaching"
+homepage = "https://www.teaching-h2020.eu/"
+
+[[tool.poetry.source]]
+name = "tf-arm"
+url = "https://tf.kmtea.eu/whl/stable.html"
+priority = "explicit"
+
+[tool.poetry.dependencies]
+python = "~3.8"
+certifi = "=2023.7.22"
+pika = "=1.2.0"
+confluent-kafka = "=2.2.0"
+dataclasses-json = "=0.5.7"
+pyyaml = "*"
+
+# teaching-ai_toolkit dependencies
+cffi = {version = "=1.15.0", optional = true}
+scikit-learn = {version = "1.1.3", optional = true}
+tensorflow = {version = "=2.8.0", optional = true}
+# tensorflow-aarch64 = {version = "~2.8", optional = true, python = "~3.8", source = "tf-arm"}
+tensorflow-addons = {version = "=0.18", extras = ["tensorflow"], optional = true}
+watchdog = {version = "^3.0.0", optional = true}
+matplotlib = {version = "3.7.3", optional = true}
+seaborn = {version = "^0.12.2", optional = true}
+hyperopt = {version = "0.2.7", optional = true}
+mlflow = {version = "1.24.0", optional = true}
+
+# teaching-sensors dependencies
+vidgear = {version = "=0.2.5", extras = ["core"], optional = true}
+numpy = {version = "=1.22.3", optional = true}
+pyserial = {version = "=3.5", optional = true}
+pillow = {version = "=9.3.0", optional = true}
+
+# teaching-data dependencies
+influxdb-client = {version = "=1.27.0", optional = true}
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+pipx = "^1.2.0"
+commitizen = "^3.9.0"
+pre-commit = "^3.4.0"
+requests = "^2.31.0"
+cffi = "*"
+
+[tool.poetry.extras]
+dev = ["black", "pipx", "commitizen", "pre-commit", "requests"]
+ai_toolkit = ["cffi", "scikit-learn", "tensorflow", "tensorflow-addons", "watchdog", "matplotlib", "seaborn", "hyperopt", "mlflow"]
+sensors = ["vidgear", "numpy", "pyserial", "pillow"]
+data = ["influxdb-client"]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

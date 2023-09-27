@@ -1,0 +1,2 @@
+pika===1.2.0
+dataclasses-json===0.5.7

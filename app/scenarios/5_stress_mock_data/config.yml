@@ -1,0 +1,21 @@
+influxdb_logger:
+  topics:
+  - '*.*.value'
+eda_mock:
+  path: /storage/data/wesad.csv
+  output_topic: sensor.eda.value
+  transmit_rate: 0.1
+stress_service:
+  topics:
+  - sensor.eda.value
+  feature_keys:
+  - eda
+  model_path: null
+  input_size: 1
+  layers: 1
+  units: 20
+  connectivity: 1.0
+  leaky: 0.8
+  spectral_radius: 0.9
+  n_classes: 1
+  calibration_steps: 0
