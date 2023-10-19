@@ -12,9 +12,7 @@ if __name__ == "__main__":
     app.add_rabbitmq()
     app.add_influxdb()
     app.add_kafka_client(host="20.81.146.253", port=29092)
-    data_manager = InfluxDBManager(
-        ["sensor.chest.value.*", "prediction.stress.value.*"]
-    )
+    data_manager = InfluxDBManager(["sensor.chest.value", "prediction.stress.value"])
     user = CSVFeed(
         path=f"/storage/data/wesad/s{user_id}_mini.csv",
         output_topic="sensor.chest.value",
