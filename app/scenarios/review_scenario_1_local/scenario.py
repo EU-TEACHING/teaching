@@ -8,7 +8,8 @@ if __name__ == "__main__":
     app = TEACHINGApplication(volume="../../storage")
     app.add_rabbitmq()
     app.add_influxdb()
-    app.add_kafka()
+    app.add_kafka_broker()
+    app.add_kafka_client()
     data_manager = InfluxDBManager(
         ["sensor.chest.value.*", "prediction.stress.value.*"]
     )

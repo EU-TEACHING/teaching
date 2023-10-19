@@ -1,4 +1,5 @@
 import os
+import socket
 import yaml
 from typing import List, Optional
 from teaching.interface import TEACHINGNode
@@ -81,50 +82,46 @@ class TEACHINGApplication(object):
             }
         )
 
-    def add_kafka(
-        self,
-        host: str = "kafka",
-        port: int = 9092,
-        default_topic: str = "teaching",
-        default_group: str = "teaching",
-        only_env: bool = False,
-    ):
-        if not only_env:
-            # Include zookeeper
-            self._services["zookeeper"] = {
-                "image": "bitnami/zookeeper:latest",
-                "container_name": "zookeeper",
-                "hostname": "zookeeper",
-                "ports": ["2181:2181"],
-                "env_file": ".env",
-            }
-
-            self._services["kafka"] = {
-                "image": "bitnami/kafka:latest",
-                "container_name": "kafka",
-                "hostname": "kafka",
-                "depends_on": ["zookeeper"],
-                "ports": ["9092:9092"],
-                "env_file": ".env",
-            }
-        # Include zookeeper environment variables
-        self._env.update(
-            {
-                "KAFKA_ZOOKEEPER_CONNECT": "zookeeper:2181",
-                "ALLOW_PLAINTEXT_LISTENER": "yes",
-                "ALLOW_ANONYMOUS_LOGIN": "yes",
-            }
-        )
+    def add_kafka_client(self, host: str = "kafka", port: int = 9092):
         self._env.update(
             {
                 "KAFKA_HOST": host,
                 "KAFKA_PORT": port,
+            }
+        )
+
+    def add_kafka_broker(
+        self,
+        host_address: Optional[str] = None,
+        default_topic: str = "teaching",
+        default_group: str = "teaching",
+    ):
+        # Include zookeeper
+        self._services["zookeeper"] = {
+            "image": "bitnami/zookeeper:latest",
+            "container_name": "zookeeper",
+            "hostname": "zookeeper",
+            "ports": ["2181:2181"],
+            "environment": {
+                "KAFKA_ZOOKEEPER_CONNECT": "zookeeper:2181",
+                "ALLOW_PLAINTEXT_LISTENER": "yes",
+                "ALLOW_ANONYMOUS_LOGIN": "yes",
+            },
+        }
+
+        self._services["kafka"] = {
+            "image": "bitnami/kafka:latest",
+            "container_name": "kafka",
+            "hostname": "kafka",
+            "depends_on": ["zookeeper"],
+            "ports": ["9092:9092", "29092:29092"],
+            "environment": {
                 "KAFKA_DEFAULT_TOPIC": default_topic,
                 "KAFKA_DEFAULT_GROUP": default_group,
                 "KAFKA_CFG_ZOOKEEPER_CONNECT": "zookeeper:2181",
-                "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP": "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT",
-                "KAFKA_CFG_LISTENERS": "PLAINTEXT://:9092,PLAINTEXT_HOST://:29092",
-                "KAFKA_CFG_ADVERTISED_LISTENERS": "PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092",
+                "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP": "PLAINTEXT:PLAINTEXT",
+                "KAFKA_CFG_LISTENERS": "PLAINTEXT://:9092",
+                "KAFKA_CFG_ADVERTISED_LISTENERS": "PLAINTEXT://kafka:9092",
                 "KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE": "true",
                 "KAFKA_CFG_GROUP_INITIAL_REBALANCE_DELAY_MS": "0",
                 "KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR": "1",
@@ -132,8 +129,28 @@ class TEACHINGApplication(object):
                 "KAFKA_CFG_LOG_FLUSH_INTERVAL_MS": "1000",
                 "KAFKA_CFG_LOG_RETENTION_HOURS": "168",
                 "KAFKA_CFG_LOG4J_ROOT_LOGLEVEL": "INFO",
-            }
-        )
+            },
+        }
+        if host_address is not None:
+            protocol_map = self._services["kafka"]["environment"][
+                "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP"
+            ]
+            protocol_map = f"{protocol_map},PLAINTEXT_HOST:PLAINTEXT"
+            self._services["kafka"]["environment"][
+                "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP"
+            ] = protocol_map
+
+            lst = self._services["kafka"]["environment"]["KAFKA_CFG_LISTENERS"]
+            lst = f"{lst},PLAINTEXT_HOST://0.0.0.0:29092"
+            self._services["kafka"]["environment"]["KAFKA_CFG_LISTENERS"] = lst
+
+            alst = self._services["kafka"]["environment"][
+                "KAFKA_CFG_ADVERTISED_LISTENERS"
+            ]
+            alst = f"{alst},PLAINTEXT_HOST://{host_address}:29092"
+            self._services["kafka"]["environment"][
+                "KAFKA_CFG_ADVERTISED_LISTENERS"
+            ] = alst
 
     def add_influxdb(
         self,

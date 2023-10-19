@@ -3,8 +3,8 @@ from teaching.ai_toolkit.training.federated.algorithms.fedavg import FedAvgServe
 
 if __name__ == "__main__":
     app = TEACHINGApplication(volume="../../../storage")
-    app.add_kafka(host="83.212.240.38")
-
+    app.add_kafka_broker(host_address="20.81.146.253")
+    app.add_kafka_client()
     fed_server = FedAvgServer(
         topic="models.stress",
         model_path="/storage/models/stress",

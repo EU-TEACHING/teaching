@@ -11,7 +11,7 @@ if __name__ == "__main__":
     app = TEACHINGApplication(volume="../../../storage")
     app.add_rabbitmq()
     app.add_influxdb()
-    app.add_kafka(host="83.212.240.38", only_env=True)
+    app.add_kafka_client(host="20.81.146.253", port=29092)
     data_manager = InfluxDBManager(
         ["sensor.chest.value.*", "prediction.stress.value.*"]
     )
